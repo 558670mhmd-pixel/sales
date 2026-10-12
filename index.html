@@ -30,7 +30,6 @@
             overflow: hidden;
         }
 
-        /* دوائر الخلفية المضاءة المتحركة */
         .glow-circle-1 {
             position: absolute; width: 350px; height: 350px; background: rgba(99, 102, 241, 0.35);
             filter: blur(90px); border-radius: 50%; top: 10%; left: 15%;
@@ -178,8 +177,8 @@
         <div id="login-form-area">
             <input type="email" id="auth-email" placeholder="البريد الإلكتروني" autocomplete="email">
             <input type="password" id="auth-password" placeholder="كلمة السر" autocomplete="current-password">
-            <button class="btn-auth-main" id="btnLogin">تسجيل الدخول 🚀</button>
-            <button class="btn-auth-sub" id="btnRegToggle">إنشاء حساب جديد 📝</button>
+            <button class="btn-auth-main" id="btnLogin" type="button">تسجيل الدخول 🚀</button>
+            <button class="btn-auth-sub" id="btnRegToggle" type="button">إنشاء حساب جديد 📝</button>
         </div>
 
         <!-- نموذج إنشاء حساب جديد -->
@@ -187,8 +186,8 @@
             <p style="color:#38bdf8; font-size:12px; margin-bottom:12px;">أنشئ حسابك وسيتم إرسال الطلب إلى pending_requests للإدارة:</p>
             <input type="email" id="reg-email" placeholder="البريد الإلكتروني الجديد">
             <input type="password" id="reg-password" placeholder="كلمة السر الجديدة">
-            <button class="btn-auth-main" id="btnRegSubmit" style="background: linear-gradient(135deg, #10b981, #059669);">إرسال طلب التسجيل ⚡</button>
-            <button class="btn-auth-sub" id="btnRegBack">العودة لتسجيل الدخول 🔙</button>
+            <button class="btn-auth-main" id="btnRegSubmit" type="button" style="background: linear-gradient(135deg, #10b981, #059669);">إرسال طلب التسجيل ⚡</button>
+            <button class="btn-auth-sub" id="btnRegBack" type="button">العودة لتسجيل الدخول 🔙</button>
         </div>
     </div>
 </div>
@@ -198,7 +197,7 @@
         <h1 style="font-size:20px; margin:0;">💻 منظومة محمد فون - النسخة متعددة الأنشطة التجاريّة</h1>
         <div>
             <span id="userEmailDisplay" style="font-size: 13px; color: #fbbf24; margin-left: 10px; font-weight:bold;"></span>
-            <button class="logout-btn" id="btnLogout">تسجيل الخروج 🚪</button>
+            <button class="logout-btn" id="btnLogout" type="button">تسجيل الخروج 🚪</button>
         </div>
     </div>
 
@@ -342,19 +341,28 @@
         }
     });
 
-    // تسجيل الدخول
-    document.getElementById('btnLogin').onclick = () => {
+    // تسجيل الدخول بدون أي شاشة سوداء أو تقطيع
+    document.getElementById('btnLogin').onclick = (e) => {
+        e.preventDefault();
         const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value.trim();
-        if(!email || !password) return alert('يرجى إدخال البريد الإلكتروني وكلمة السر!');
-        auth.signInWithEmailAndPassword(email, password).catch(err => alert('خطأ في تسجيل الدخول: ' + err.message));
+        if(!email || !password) {
+            alert('يرجى إدخال البريد الإلكتروني وكلمة السر!');
+            return;
+        }
+        auth.signInWithEmailAndPassword(email, password)
+            .catch(err => alert('خطأ في تسجيل الدخول: ' + err.message));
     };
 
     // إرسال طلب إنشاء الحساب إلى pending_requests
-    document.getElementById('btnRegSubmit').onclick = () => {
+    document.getElementById('btnRegSubmit').onclick = (e) => {
+        e.preventDefault();
         const email = document.getElementById('reg-email').value.trim();
         const password = document.getElementById('reg-password').value.trim();
-        if(!email || !password) return alert('يرجى كتابة البريد وكلمة السر أولاً!');
+        if(!email || !password) {
+            alert('يرجى كتابة البريد وكلمة السر أولاً!');
+            return;
+        }
 
         const now = new Date();
         const timeString = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()} ,${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
@@ -392,13 +400,5 @@
                         <input type="number" id="s-${c.id}" placeholder="بيع">
                         <input type="number" id="q-${c.id}" placeholder="عدد">
                     </div>
-                    <button class="btn btn-add" onclick="addItem('${c.id}', '${c.name}')">إضافة للمخزن ➕</button>
-                    <div class="table-wrap"><table id="t-${c.id}"><thead><tr><th>المادة</th><th>عدد</th><th>إجراء</th></tr></thead><tbody></tbody></table></div>
-                </div>`;
-        });
-        render();
-    }
-
-    // إضافة مادة جديدة للمخزن سحابياً
-    function addItem(catKey, catName) {
-        const barcode = document.ge
+                    <button class="btn btn-add" onclick="addItem('${c.id}', '${c.name}')" type="button">إضافة للمخزن ➕</button>
+                    <div class="table-wrap"><table id="t-${c.id}"><thead><tr><th>المادة</th><th>عدد</th><th>إجراء</th></tr></
