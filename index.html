@@ -1,438 +1,239 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="htmlRoot">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق مبيعات v1 - النظام التجاري الذكي ومتعدد الأنشطة 💼🖥️</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>منظومة محمد فون - النسخة الاحترافية الشاملة 🖥️</title>
+    <!-- مكتبات Firebase الأساسية -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
 
         :root { 
             --primary: #0f172a; 
-            --accent: #2563eb; 
-            --gold: #f59e0b; 
+            --accent: #3b82f6; 
+            --bg: #f8fafc; 
             --success: #10b981; 
-            --danger: #ef4444; 
-            --bg: #030712; 
+            --card-border: #e2e8f0;
         }
 
-        body { 
-            background: var(--bg); 
-            font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; 
-            padding: 10px; 
-            color: #000; 
-            box-sizing: border-box; 
-        }
-        *, *:before, *:after { box-sizing: inherit; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: 'Tajawal', sans-serif; direction: rtl; color: #0f172a; }
 
-        .container { 
-            max-width: 1900px; 
-            margin: auto; 
-            background: #fff; 
-            padding: 15px; 
-            border-radius: 12px; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-        }
-
-        /* ===== واجهة الدخول الحديثة ===== */
+        /* ===== واجهة دخول خرافية (فنتكشاسية / Glassmorphism) ===== */
         #auth-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #030712 100%); 
-            z-index: 999999; display: flex; justify-content: center; align-items: center; 
-            padding: 20px;
-            pointer-events: auto;
+            background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #090d16 50%, #030712 100%); 
+            z-index: 999999; display: flex; justify-content: center; align-items: center; padding: 20px; 
+            overflow: hidden;
+        }
+
+        /* دوائر الخلفية المضاءة المتحركة */
+        .glow-circle-1 {
+            position: absolute; width: 350px; height: 350px; background: rgba(99, 102, 241, 0.35);
+            filter: blur(90px); border-radius: 50%; top: 10%; left: 15%;
+            animation: floatGlow 8s infinite alternate ease-in-out;
+        }
+        .glow-circle-2 {
+            position: absolute; width: 300px; height: 300px; background: rgba(236, 72, 153, 0.25);
+            filter: blur(90px); border-radius: 50%; bottom: 10%; right: 15%;
+            animation: floatGlow 6s infinite alternate ease-in-out;
+        }
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -30px) scale(1.1); }
         }
 
         .auth-card { 
-            background: rgba(15, 23, 42, 0.85); 
-            padding: 35px 28px; 
-            border-radius: 24px; 
-            width: 100%; 
-            max-width: 440px; 
-            text-align: center; 
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.25); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(20px);
-            color: #f8fafc;
             position: relative;
-            z-index: 1000000;
+            background: rgba(15, 23, 42, 0.75); 
+            padding: 40px 30px; 
+            border-radius: 28px; 
+            width: 100%; max-width: 440px; 
+            text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            backdrop-filter: blur(25px);
+            color: #fff; 
         }
 
-        .auth-logo-icon {
-            width: 70px; height: 70px;
-            margin: 0 auto 15px auto;
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            border-radius: 20px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        .auth-logo {
+            width: 75px; height: 75px; margin: 0 auto 15px;
+            background: linear-gradient(135deg, #6366f1, #3b82f6);
+            border-radius: 22px; display: flex; justify-content: center; align-items: center;
+            font-size: 38px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.5);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .auth-card h2 { 
-            color: #ffffff; 
-            margin: 0 0 5px 0; 
-            font-size: 26px; 
-            font-weight: 800; 
-        }
-
-        .auth-sub {
-            color: #94a3b8;
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
+        .auth-card h2 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+        .auth-card p.subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 25px; }
 
         .auth-card input { 
-            width: 100%; 
-            padding: 14px 16px; 
-            font-size: 14px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 12px; 
-            margin-bottom: 14px; 
-            font-weight: 500; 
-            background: rgba(15, 23, 42, 0.9); 
-            color: #fff; 
-            outline: none;
-            position: relative;
-            z-index: 1000001;
-            pointer-events: auto !important;
+            width: 100%; padding: 14px 16px; 
+            background: rgba(30, 41, 59, 0.7); 
+            color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 12px; margin-bottom: 14px; outline: none; font-size: 14px;
+            transition: all 0.3s ease;
             font-family: inherit;
         }
-
         .auth-card input:focus { 
-            border-color: #6366f1; 
-            background: #0f172a; 
+            border-color: #6366f1; background: rgba(30, 41, 59, 0.95);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
         }
 
-        .btn-auth-primary { 
-            width: 100%; 
-            padding: 14px; 
-            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            margin-top: 5px; 
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        .btn-auth-main { 
+            background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%); 
+            padding: 14px; border: none; border-radius: 12px; color: #fff; 
+            font-weight: 700; font-size: 15px; width: 100%; cursor: pointer; 
+            margin-top: 5px; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .btn-auth-main:active { transform: scale(0.98); }
+
+        .btn-auth-sub { 
+            background: transparent; border: 1px dashed rgba(255, 255, 255, 0.3); 
+            color: #cbd5e1; padding: 10px; border-radius: 10px; font-size: 13px; 
+            width: 100%; cursor: pointer; margin-top: 15px; font-family: inherit;
+        }
+
+        /* ===== واجهة المنظومة الرئيسية ===== */
+        .container { max-width: 1800px; margin: auto; padding: 15px; }
+        .header { 
+            background: linear-gradient(135deg, #0f172a, #1e293b); 
+            color: white; padding: 18px 25px; border-radius: 20px; 
+            margin-bottom: 20px; display: flex; justify-content: space-between; 
+            align-items: center; flex-wrap: wrap; gap: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .store-selector-bar { 
+            background: #fff; padding: 15px 20px; border-radius: 16px; 
+            margin-bottom: 20px; border: 1px solid var(--card-border); 
+            display: flex; align-items: center; gap: 15px; flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .store-selector-bar select { 
+            padding: 10px 15px; background: #0f172a; color: #38bdf8; 
+            border: 1px solid #334155; border-radius: 10px; font-weight: bold; 
+            font-size: 15px; flex: 1; min-width: 260px; outline: none; cursor: pointer;
             font-family: inherit;
         }
 
-        .btn-auth-link {
-            background: transparent;
-            border: 1px dashed rgba(255, 255, 255, 0.25);
-            color: #cbd5e1;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 13px;
-            margin-top: 15px;
-            width: 100%;
-            cursor: pointer;
-            font-family: inherit;
+        .barcode-sell-zone { 
+            background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; 
+            border: 2px dashed #3b82f6; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        #quick-barcode { 
+            width: 100%; max-width: 500px; padding: 12px 20px; font-size: 20px; 
+            border-radius: 12px; border: 2px solid #3b82f6; text-align: center; 
+            background: #eff6ff; font-weight: bold; outline: none; font-family: inherit;
         }
 
-        .feature-pills {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 25px;
-            flex-wrap: wrap;
+        .sections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .section-card { 
+            background: #fff; border-radius: 18px; padding: 20px; 
+            border-top: 6px solid var(--primary); 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04); border-left: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);
         }
 
-        .pill-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #a5f3fc;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
+        .profit-badge { 
+            font-size: 15px; font-weight: bold; padding: 10px 14px; 
+            background: #f8fafc; border-radius: 12px; display: flex; 
+            justify-content: space-between; margin-bottom: 15px; border: 1px solid #e2e8f0; color: #0f172a; 
         }
 
-        /* نافذة حول الحساب */
-        #about-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75); z-index: 99998; display: none;
-            justify-content: center; align-items: center; padding: 15px;
-        }
-        .about-card {
-            background: #1e293b; color: #fff; padding: 25px; border-radius: 18px;
-            width: 100%; max-width: 420px; border: 1px solid #38bdf8; text-align: right;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        }
-        .about-card h3 { color: #38bdf8; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 8px; }
-        .about-card p { font-size: 14px; margin: 8px 0; color: #cbd5e1; }
-        .about-card .close-btn { background: #dc2626; margin-top: 15px; width: 100%; padding: 10px; border: none; color: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        .top-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #1e293b; padding: 10px 15px; border-radius: 8px; color: #fff; flex-wrap: wrap; gap: 10px; }
-        .toolbar-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .toolbar-group select { padding: 6px 10px; border-radius: 6px; background: #0f172a; color: #fff; border: 1px solid #475569; font-weight: bold; }
+        .input-group { display: flex; gap: 6px; margin-bottom: 8px; }
+        input { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; font-size: 13px; font-family: inherit; }
         
-        .trial-badge { background: #1e293b; border: 1px solid #d97706; color: #fbbf24; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        .pro-badge { background: linear-gradient(135deg, #10b981, #059669); border: 1px solid #34d399; color: #fff; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(16,185,129,0.4); }
-        .net-status { background: #334155; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .btn { padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-top: 5px; font-family: inherit; }
+        .btn-add { background: #0f172a; }
+        .btn-sell { background: var(--success); font-size: 13px; height: 32px; width: auto; padding: 0 14px; }
 
-        .activate-pro-btn { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
-        .activate-tool-btn { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
-        .about-link-btn { background: #2563eb; color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
-        .delete-account-btn { background: #dc2626; color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+        .table-wrap { height: 220px; overflow-y: auto; border: 1px solid #e2e8f0; margin-top: 15px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+        th { background: #f8fafc; position: sticky; top: 0; color: #475569; font-weight: 700; }
 
-        .marquee-box { background: #000; color: #fbbf24; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 14px; margin-bottom: 12px; border: 1px solid #78350f; overflow: hidden; white-space: nowrap; }
-        
-        .header-classic { background: linear-gradient(to bottom, #334155, #1e293b); color: white; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #475569; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .brand-container { display: flex; align-items: center; gap: 15px; text-align: right; }
-        .app-logo { width: 55px; height: 55px; background: linear-gradient(135deg, #2563eb, #1e293b); border: 2px solid #fbbf24; border-radius: 14px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        
-        .logout-btn { background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
-
-        .store-selector-bar { background: #334155; padding: 10px; border-radius: 8px; color: #fff; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .store-selector-bar select { padding: 8px 12px; background: #0f172a; color: #38bdf8; border: 1px solid #475569; border-radius: 6px; font-weight: bold; font-size: 14px; flex: 1; min-width: 250px; }
-
-        .dashboard-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .dash-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; }
-        .dash-card span { display: block; font-size: 18px; color: var(--accent); margin-top: 5px; }
-
-        .pro-tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .pro-card { background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 8px; padding: 12px; }
-        .pro-card h3 { margin-top: 0; color: #38bdf8; font-size: 15px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
-
-        .barcode-section { background: #fffbeb; border: 2px dashed var(--gold); padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
-        #quick-barcode { width: 100%; max-width: 350px; padding: 10px; font-size: 16px; border: 2px solid var(--gold); border-radius: 6px; text-align: center; font-weight: bold; background: #fff; }
-        #globalSearch { width: 100%; max-width: 350px; padding: 10px; font-size: 16px; border: 2px solid #38bdf8; border-radius: 6px; text-align: center; font-weight: bold; background: #fff; }
-
-        .sections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .section-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .section-title { background: #334155; color: white; padding: 8px; border-radius: 6px; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 10px; }
-        
-        .profit-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 10px; border-radius: 6px; color: var(--success); }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 6px; }
-        input, select { padding: 8px; border: 1px solid #64748b; border-radius: 6px; font-size: 13px; font-family: inherit; width: 100%; background: #fff; color: #000; }
-        
-        .btn { padding: 8px 12px; border: 1px solid #000; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-family: inherit; width: 100%; font-size: 13px; }
-        .btn-add { background: #0f172a; margin-top: 5px; }
-        .btn-sell { background: var(--success); border-color: #047857; padding: 5px 10px; font-size: 12px; }
-
-        .table-wrap { height: 180px; overflow-y: auto; border: 1px solid #cbd5e1; margin-top: 10px; border-radius: 6px; background: #fff; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { padding: 6px; border-bottom: 1px solid #e2e8f0; border-left: 1px solid #e2e8f0; text-align: center; }
-        th { background: #f1f5f9; color: #0f172a; position: sticky; top: 0; font-weight: bold; }
-
-        .logs-area { margin-top: 20px; border: 1px solid #64748b; border-radius: 8px; padding: 12px; background: #fdfdfd; overflow-x: auto; }
-        .logs-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; }
-        .low-stock { background: #ffeeec !important; color: #991b1b; font-weight: bold; }
-        
-        .payment-toggle { display: flex; gap: 5px; margin-top: 5px; }
-        .payment-toggle button { flex: 1; padding: 4px; font-size: 11px; background: #475569; border: none; color: white; cursor: pointer; border-radius: 4px; }
-        .payment-toggle button.active { background: var(--accent); }
+        .log-section { background: white; padding: 20px; margin-top: 25px; border-radius: 18px; border: 1px solid var(--card-border); box-shadow: 0 8px 20px rgba(0,0,0,0.03); }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit; }
     </style>
 </head>
 <body>
 
-<!-- نافذة حول الحساب -->
-<div id="about-modal">
-    <div class="about-card">
-        <h3>ℹ️ حول الحساب والترخيص وتفاصيل المتاجر</h3>
-        <p><b>البريد الإلكتروني:</b> <span id="modalEmail">-</span></p>
-        <p><b>نوع الحساب:</b> <span id="modalAccountType">مدفوع رسمي 🌟</span></p>
-        <p><b>حالة النظام:</b> <span id="modalStatus">مفعل مدى الحياة ويدعم الأنشطة كافة</span></p>
-        <hr style="border-color:#334155; margin:12px 0;">
-        <p>📱 <b>محمد فون | مكتب الكوخ</b></p>
-        <p>واتساب: <a href="https://wa.me/9647766501022" target="_blank" style="color:#38bdf8;">07766501022</a></p>
-        <p>فيسبوك: <a href="https://www.facebook.com/share/19uQcPHk34/" target="_blank" style="color:#38bdf8;">زيارة صفحة الفيسبوك</a></p>
-        <button class="close-btn" id="btnCloseAbout">إغلاق ❌</button>
-    </div>
-</div>
-
-<!-- واجهة تسجيل الدخول -->
+<!-- واجهة دخول فنتكشاسية فاخرة -->
 <div id="auth-overlay">
+    <div class="glow-circle-1"></div>
+    <div class="glow-circle-2"></div>
+    
     <div class="auth-card">
-        <div class="auth-logo-icon">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-            </svg>
-        </div>
-        <h2>تطبيق مبيعات v1</h2>
-        <div class="auth-sub">النظام التجاري الأذكى لإدارة المخزون والمتاجر المتعددة</div>
+        <div class="auth-logo">💎</div>
+        <h2>منظومة محمد فون</h2>
+        <p class="subtitle">النظام التجاري الأكثر ثباتاً وإدارة للمخزون المتقدم</p>
         
         <!-- نموذج تسجيل الدخول -->
         <div id="login-form-area">
             <input type="email" id="auth-email" placeholder="البريد الإلكتروني" autocomplete="email">
             <input type="password" id="auth-password" placeholder="كلمة السر" autocomplete="current-password">
-            <button class="btn-auth-primary" id="btnLogin" type="button">تسجيل الدخول 🚀</button>
-            <button class="btn-auth-link" id="btnRegToggle" type="button">إنشاء حساب جديد 📝</button>
+            <button class="btn-auth-main" id="btnLogin">تسجيل الدخول 🚀</button>
+            <button class="btn-auth-sub" id="btnRegToggle">إنشاء حساب جديد 📝</button>
         </div>
 
         <!-- نموذج إنشاء حساب جديد -->
         <div id="register-form-area" style="display:none;">
-            <p style="color:#38bdf8; font-size: 13px; margin-bottom: 15px;">أنشئ حسابك الجديد لتظهر بياناتك لدى الإدارة ويتم تفعيلك:</p>
-            <input type="email" id="reg-email" placeholder="البريد الإلكتروني الجديد" autocomplete="email">
-            <input type="password" id="reg-password" placeholder="كلمة السر الجديدة" autocomplete="new-password">
-            <button class="btn-auth-primary" id="btnRegSubmit" type="button" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">إرسال طلب التسجيل ⚡</button>
-            <button class="btn-auth-link" id="btnRegBack" type="button">العودة لتسجيل الدخول 🔙</button>
-        </div>
-
-        <!-- مميزات ترغيبية -->
-        <div class="feature-pills">
-            <span class="pill-item">⚡ يعمل بدون إنترنت</span>
-            <span class="pill-item">🔔 تنبيهات النفاذ</span>
-            <span class="pill-item">📊 إدارة المصروفات</span>
+            <p style="color:#38bdf8; font-size:12px; margin-bottom:12px;">أنشئ حسابك وسيتم إرسال الطلب إلى pending_requests للإدارة:</p>
+            <input type="email" id="reg-email" placeholder="البريد الإلكتروني الجديد">
+            <input type="password" id="reg-password" placeholder="كلمة السر الجديدة">
+            <button class="btn-auth-main" id="btnRegSubmit" style="background: linear-gradient(135deg, #10b981, #059669);">إرسال طلب التسجيل ⚡</button>
+            <button class="btn-auth-sub" id="btnRegBack">العودة لتسجيل الدخول 🔙</button>
         </div>
     </div>
 </div>
 
 <div class="container">
-    <div class="top-toolbar">
-        <div class="toolbar-group">
-            <label>🌐 اللغة:</label>
-            <select id="langSelect">
-                <option value="ar">العربية (Arabic)</option>
-                <option value="en">English (الإنجليزية)</option>
-                <option value="tr">Türkçe (التركية)</option>
-            </select>
-            <label>💱 العملة:</label>
-            <select id="currencySelect">
-                <option value="IQD">دينار عراقي (IQD)</option>
-                <option value="USD">دولار أمريكي ($ USD)</option>
-            </select>
-            <span class="net-status" id="netStatusTag">🌐 نظام الحماية والربط السحابي</span>
-        </div>
-        <div class="toolbar-group" id="statusToolbarGroup">
-            <button class="about-link-btn" id="btnOpenAbout">ℹ️ حول التطبيق</button>
-            <button class="delete-account-btn" id="btnDeleteAccount">🗑️ حذف الحساب</button>
-            <div class="trial-badge" id="trialBadgeContainer">
-                ⏳ مدة التفعيل: <span id="timerDisplay" style="color:#fff; font-family:monospace;">مفعل مدى الحياة</span>
-            </div>
-            <a href="https://wa.me/9647766501022?text=مرحباً، أنشأت حساباً جديداً وقمت بتحويل المبلغ ($8) وأرغب بتفعيله" target="_blank" class="activate-pro-btn">
-                ⭐ تفعيل مدفوع ($8)
-            </a>
-            <a href="https://wa.me/9647766501022?text=مرحباً، أرغب بتفعيل برامج UFCV و Oxygen" target="_blank" class="activate-tool-btn">
-                🛠️ UFCV/Oxygen ($15)
-            </a>
-        </div>
-    </div>
-
-    <div class="marquee-box">
-        <marquee behavior="scroll" direction="right" scrollamount="5">
-            ⚡ مرحباً بك في تطبيق مبيعات v1 الذكي | إدارة المخزون، تنبيهات نفاذ البضاعة، إدارة المصروفات، وأرباح المتاجر
-        </marquee>
-    </div>
-
-    <div class="header-classic">
-        <div class="brand-container">
-            <div class="app-logo">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
-            </div>
-            <div class="title-area">
-                <h1 id="appTitle" style="margin:0; font-size:20px;">تطبيق مبيعات v1 - النظام التجاري الذكي المتكامل</h1>
-                <p style="margin:3px 0 0 0; font-size:12px; color:#94a3b8;">إدارة المخزون، الديون، المصروفات اليومية، والتنبيهات المباشرة</p>
-            </div>
-        </div>
+    <div class="header">
+        <h1 style="font-size:20px; margin:0;">💻 منظومة محمد فون - النسخة متعددة الأنشطة التجاريّة</h1>
         <div>
-            <span id="userEmailDisplay" style="font-size: 12px; color: #fbbf24; display: block; margin-bottom: 5px;"></span>
-            <button class="logout-btn" id="btnLogout" type="button">تسجيل الخروج 🚪</button>
+            <span id="userEmailDisplay" style="font-size: 13px; color: #fbbf24; margin-left: 10px; font-weight:bold;"></span>
+            <button class="logout-btn" id="btnLogout">تسجيل الخروج 🚪</button>
         </div>
     </div>
 
+    <!-- شريط تحديد نوع النشاط التجاري لتوليد الأقسام المناسبة -->
     <div class="store-selector-bar">
-        <label for="storeTypeSelect" style="font-weight: bold; font-size: 15px;">🏪 حدد نوع نشاط متجرك:</label>
+        <label for="storeTypeSelect" style="font-weight: 800; font-size: 15px; color:#0f172a;">🏪 حدد نوع نشاط متجرك لتوليد الخانات المخصصة:</label>
         <select id="storeTypeSelect">
-            <option value="mobiles">📱 محل موبايلات وإكسسوارات وصيانة</option>
-            <option value="cosmetics">💄 محل ميكاب والكوزمتك وعناية بالبشرة</option>
-            <option value="clothes">👕 محل ملابس رجالي الشبابي وأزياء</option>
-            <option value="grocery">🥫 سوبرماركت ومواد غذائية عامة</option>
-            <option value="electronics">🔌 محل أجهزة منزلية وإلكترونيات</option>
+            <option value="mobiles">📱 متجر الموبايلات والصيانة والإكسسوارات</option>
+            <option value="cosmetics">💄 الكوزمتك والعناية والجمال والمكياج</option>
+            <option value="clothes">👕 الملابس والأزياء والأحذية</option>
+            <option value="grocery">🥫 السوبرماركت والمواد الغذائية</option>
+            <option value="stationery">📚 المكتبة والقرطاسية والمستلزمات</option>
         </select>
     </div>
 
-    <div class="dashboard-bar">
-        <div class="dash-card"><span>إجمالي مواد المخزن</span> <span id="totalItemsCount">0</span></div>
-        <div class="dash-card"><span>رأس المال المستثمر</span> <span id="totalBuyMoney">0</span></div>
-        <div class="dash-card"><span>مبيعات اليوم</span> <span id="totalSalesCount">0</span></div>
-        <div class="dash-card" style="color:var(--danger);"><span>إجمالي المصروفات والنثريات</span> <span id="totalExpensesSum">0</span></div>
-        <div class="dash-card" style="color:var(--success);"><span>صافي الأرباح النهائية</span> <span id="totalNetProfit">0</span></div>
+    <div class="barcode-sell-zone">
+        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#1e40af;">⚡ مسح باركود للبيع الفوري الكاسير:</label>
+        <input type="text" id="quick-barcode" placeholder="ضع المؤشر هنا وامسح كود القطعة بالقارئ..." autofocus>
     </div>
 
-    <div class="pro-tools-grid">
-        <div class="pro-card">
-            <h3>👥 إدارة ديون الزبائن والكرص</h3>
-            <input type="text" id="debtorName" placeholder="اسم الزبون / المدين" style="margin-bottom:6px;">
-            <input type="number" id="debtorAmount" placeholder="قيمة الدين بالمبلغ" style="margin-bottom:6px;">
-            <button class="btn" style="background:#2563eb;" id="btnSaveDebt" type="button">تسجيل الدين ➕</button>
-            <div class="table-wrap" style="height:90px; margin-top:8px; background:#0f172a;">
-                <table id="debtTable" style="color:#fff;">
-                    <thead><tr><th>الزبون</th><th>المبلغ</th><th>إجراء</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="pro-card">
-            <h3>💸 إدارة المصروفات والنثريات اليومية</h3>
-            <input type="text" id="expenseReason" placeholder="سبب الصرف (إيجار، كهرباء، شاي...)" style="margin-bottom:6px;">
-            <input type="number" id="expenseAmount" placeholder="قيمة المصروف" style="margin-bottom:6px;">
-            <button class="btn" style="background:#dc2626;" id="btnSaveExpense" type="button">إضافة مصروف 📉</button>
-            <div class="table-wrap" style="height:90px; margin-top:8px; background:#0f172a;">
-                <table id="expensesTable" style="color:#fff;">
-                    <thead><tr><th>السبب</th><th>المبلغ</th><th>إجراء</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="pro-card" style="text-align: center;">
-            <h3>📊 تحليلات ورسوم الأرباح البيانية</h3>
-            <div style="width: 100%; height: 110px; display: flex; justify-content: center; align-items: center;">
-                <canvas id="profitChart" style="max-height: 100px;"></canvas>
-            </div>
-        </div>
-
-        <div class="pro-card">
-            <h3>💾 النسخ الاحتياطي والأمان</h3>
-            <p style="font-size: 12px; color: #94a3b8; margin: 3px 0;">تصدير واستيراد قواعد البيانات لحماية بياناتك:</p>
-            <button class="btn" style="background:#10b981; margin-bottom:4px;" id="btnExport" type="button">📥 تحميل نسخة احتياطية</button>
-            <button class="btn" style="background:#d97706;" id="btnImport" type="button">📤 استعادة النسخة</button>
-            <input type="file" id="importFile" style="display:none">
-        </div>
-    </div>
-
-    <div class="barcode-section">
-        <div>
-            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 3px;">⚡ مسح الباركود للبيع الفوري:</label>
-            <input type="text" id="quick-barcode" placeholder="امسح الباركود هنا...">
-        </div>
-        <div>
-            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 3px;">🔍 بحث سريع في المخزن:</label>
-            <input type="text" id="globalSearch" placeholder="ابحث عن اسم مادة...">
-        </div>
-    </div>
-
+    <!-- شبكة الأقسام تتولد ديناميكياً -->
     <div class="sections-grid" id="mainGrid"></div>
 
-    <div class="logs-area">
-        <div class="logs-title">📋 سجل التدقيق والحركات التجارية ومبيعات الموظفين والفواتير</div>
-        <div class="table-wrap" style="height: 180px;">
-            <table id="salesLogTable">
+    <!-- سجل مبيعات اليوم -->
+    <div class="log-section">
+        <h2 style="font-size: 18px; margin-bottom: 12px; color:#0f172a;">📄 سجل مبيعات اليوم والأرباح</h2>
+        <div class="table-wrap">
+            <table id="salesLog">
                 <thead>
                     <tr>
-                        <th>رقم الفاتورة</th>
-                        <th>اسم المادة</th>
-                        <th>القسم الفرعي</th>
-                        <th>سعر البيع</th>
-                        <th>الربح المحقق</th>
-                        <th>طريقة الدفع</th>
-                        <th>الموظف/الفني</th>
-                        <th>التوقيت</th>
-                        <th>خيارات إدارية</th>
+                        <th>المادة</th>
+                        <th>القسم</th>
+                        <th>الربح الصافي</th>
+                        <th>الوقت</th>
+                        <th>إجراء</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -441,590 +242,163 @@
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, push, onValue, get, child, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+<script>
+    // إعدادات Firebase الخاصة بك
     const firebaseConfig = {
-      apiKey: "AIzaSyAlQK9UKjFRDB4InB1J_DmkH2hTGppRhLQ",
-      authDomain: "mhmd-foon-7caee.firebaseapp.com",
-      databaseURL: "https://mhmd-foon-7caee-default-rtdb.firebaseio.com",
-      projectId: "mhmd-foon-7caee",
-      storageBucket: "mhmd-foon-7caee.firebasestorage.app",
-      messagingSenderId: "522907699898",
-      appId: "1:522907699898:web:f09b1c68be7d0c4b609083",
-      measurementId: "G-0BVQ3WW7VL"
+        apiKey: "AIzaSyAlQK9UKjFRDB4InB1J_DmkH2hTGppRhLQ",
+        authDomain: "mhmd-foon-7caee.firebaseapp.com",
+        databaseURL: "https://mhmd-foon-7caee-default-rtdb.firebaseio.com",
+        projectId: "mhmd-foon-7caee",
+        storageBucket: "mhmd-foon-7caee.firebasestorage.app",
+        messagingSenderId: "522907699898",
+        appId: "1:522907699898:web:f09b1c68be7d0c4b609083",
+        measurementId: "G-0BVQ3WW7VL"
     };
 
-    let app, auth, dbCloud;
-    try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        dbCloud = getDatabase(app);
-    } catch(e) {}
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const dbRef = firebase.database();
 
-    let currentUserUid = null;
-    let currentUserEmail = '';
-    let dbRef = null;
-    let currentCurrency = 'IQD';
-    let currentLang = 'ar';
-    let currentStoreType = 'mobiles';
-    let searchQuery = '';
-
+    // قوائم الأقسام المخصصة لكل نوع نشاط تجاري
     const storeCategoriesMap = {
         mobiles: [
-            { id: 'm_screens', name: '📱 قسم الشاشات واللوحات' },
-            { id: 'm_covers', name: '🛡️ قسم الكفرات والحمايات' },
-            { id: 'm_chargers', name: '🔌 قسم الشواحن والوصلات' },
-            { id: 'm_accessories', name: '🎧 قسم السماعات والاكسسوارات' },
-            { id: 'm_cards', name: '💳 قسم كروت الشحن والأرصدة' },
-            { id: 'm_maintenance', name: '🛠️ قسم الصيانة وقطع الغيار' }
+            { id: 'screens', name: '📱 الشاشات', color: '#2563eb' },
+            { id: 'credit', name: '💳 الأرصدة', color: '#0ea5e9' },
+            { id: 'covers', name: '🛡️ الكفرات', color: '#d97706' },
+            { id: 'stickers', name: '✨ اللواصق', color: '#059669' },
+            { id: 'chargers', name: '🔌 الشواحن', color: '#7c3aed' },
+            { id: 'headphones', name: '🎧 الهيدفونات', color: '#db2777' },
+            { id: 'cables', name: '➰ الكيبلات', color: '#4b5563' }
         ],
         cosmetics: [
-            { id: 'c_makeup', name: '💄 قسم المكياج وأدوات التجميل' },
-            { id: 'c_skincare', name: '🧴 قسم العناية بالبشرة والجسم' },
-            { id: 'c_perfumes', name: '🌸 قسم العطور ومزيلات العرق' },
-            { id: 'c_hair', name: '💇‍♀️ قسم العناية بالشعر والأجهزة' },
-            { id: 'c_accessories', name: '💍 قسم الإكسسوارات والكماليات' },
-            { id: 'c_offers', name: '🎁 قسم العروض والبوكسات الهدايا' }
+            { id: 'makeup_eye', name: '👁️ مكياج العين والوجه', color: '#db2777' },
+            { id: 'skincare', name: '✨ عناية بالبشرة والسيرومات', color: '#059669' },
+            { id: 'perfumes', name: '🌸 العطور والبخاخات', color: '#7c3aed' },
+            { id: 'lipstick', name: '💄 مكياج الشفاه والروج', color: '#ef4444' },
+            { id: 'hairtools', name: '💇‍♀️ أجهزة واستشوار الشعر', color: '#d97706' },
+            { id: 'accessories', name: '💍 الإكسسوارات والحلي', color: '#2563eb' },
+            { id: 'bodycare', name: '🧴 العناية بالجسم والاستحمام', color: '#0ea5e9' }
         ],
         clothes: [
-            { id: 'cl_shirts', name: '👕 قسم القمصان والتيشيرتات' },
-            { id: 'cl_pants', name: '👖 قسم البنطلونات والجينزات' },
-            { id: 'cl_sport', name: '⚽ قسم الملابس الرياضية والتركسوت' },
-            { id: 'cl_jackets', name: '🧥 قسم الجاكيتات والشتوي' },
-            { id: 'cl_shoes', name: '👟 قسم الأحذية والنعال الشبابي' },
-            { id: 'cl_underwear', name: '🩳 قسم المستلزمات الداخلية والجوارب' }
+            { id: 'men', name: '👕 ملابس رجالي', color: '#2563eb' },
+            { id: 'women', name: '👗 ملابس نسائية', color: '#db2777' },
+            { id: 'kids', name: '👶 ملابس أطفال', color: '#0ea5e9' },
+            { id: 'shoes', name: '👟 أحذية ومستلزماتها', color: '#d97706' },
+            { id: 'bags', name: '👜 حقائب ومحفظات', color: '#7c3aed' },
+            { id: 'belts', name: '🎗️ إكسسوارات وأحزمة', color: '#059669' },
+            { id: 'sports', name: '⚽ ملابس رياضية', color: '#16a34a' }
         ],
         grocery: [
-            { id: 'g_drinks', name: '🧃 قسم المشروبات والعصائر' },
-            { id: 'g_snacks', name: '🍫 قسم الشيبس والحلويات والشكليت' },
-            { id: 'g_canned', name: '🥫 قسم المعلبات والمأكولات الجاهزة' },
-            { id: 'g_dairy', name: '🧀 قسم الألبان والأجبان والبيض' },
-            { id: 'g_spices', name: '🧂 قسم البهارات والحبوب والمكسرات' },
-            { id: 'g_detergents', name: '🧼 قسم المنظفات ومستلزمات البيت' }
+            { id: 'canned', name: '🥫 المعلبات والمؤن', color: '#d97706' },
+            { id: 'dairy', name: '🧀 الألبان والأجبان', color: '#0ea5e9' },
+            { id: 'sweets', name: '🍫 الحلويات والسكاكر', color: '#db2777' },
+            { id: 'drinks', name: '🧃 المشروبات والعصائر', color: '#2563eb' },
+            { id: 'cleaners', name: '🧼 المنظفات والمطهرات', color: '#059669' },
+            { id: 'pasta', name: '🍝 المعكرونة والبقوليات', color: '#7c3aed' },
+            { id: 'rice_oil', name: '🌾 الأرز والزيوت', color: '#ca8a04' }
         ],
-        electronics: [
-            { id: 'e_kitchen', name: '🍳 قسم أجهزة المطبخ الكهربائية' },
-            { id: 'e_personal', name: '🔌 قسم العناية الشخصية (مجففات/حلاقة)' },
-            { id: 'e_lighting', name: '💡 قسم الإضاءة واللمبات والليد' },
-            { id: 'e_tools', name: '🔋 قسم البطاريات والشواحن الكبرى' },
-            { id: 'e_audio', name: '📻 قسم السماعات والمسارح الصوتية' },
-            { id: 'e_parts', name: '⚙️ قسم قطع الغيار والأسلاك' }
+        stationery: [
+            { id: 'notebooks', name: '📓 الدفاتر والسجلات', color: '#2563eb' },
+            { id: 'pens', name: '✏️ الأقلام وأدوات الكتابة', color: '#0ea5e9' },
+            { id: 'drawing', name: '🎨 أدوات الرسم والألوان', color: '#db2777' },
+            { id: 'bags_school', name: '🎒 الحقائب المدرسية', color: '#d97706' },
+            { id: 'geometry', name: '📐 أدوات هندسية وحاسبات', color: '#7c3aed' },
+            { id: 'paper', name: '📄 تجليد وورق تصوير', color: '#059669' },
+            { id: 'office', name: '📎 مستلزمات مكتبية', color: '#4b5563' }
         ]
     };
 
-    let localData = localStorage.getItem('mhmd_foon_offline_db');
-    let db = localData ? JSON.parse(localData) : { inv: [], sales: [], p: {}, debtors: [], expenses: [] };
+    let activeCategories = storeCategoriesMap.mobiles;
+    let systemData = { inv: [], sales: [], p: {} };
 
-    let profitChartInstance = null;
-    let selectedPaymentMethods = {};
+    // التنقل بين شاشات الدخول والتسجيل
+    document.getElementById('btnRegToggle').onclick = () => {
+        document.getElementById('login-form-area').style.display = 'none';
+        document.getElementById('register-form-area').style.display = 'block';
+    };
+    document.getElementById('btnRegBack').onclick = () => {
+        document.getElementById('register-form-area').style.display = 'none';
+        document.getElementById('login-form-area').style.display = 'block';
+    };
 
-    function getActiveCategories() {
-        return storeCategoriesMap[currentStoreType] || storeCategoriesMap.mobiles;
-    }
+    // تغيير نوع المتجر وتوليد الأقسام فوراً
+    document.getElementById('storeTypeSelect').onchange = (e) => {
+        const type = e.target.value;
+        activeCategories = storeCategoriesMap[type] || storeCategoriesMap.mobiles;
+        initUI();
+    };
 
-    function formatCurrency(val) {
-        if(currentCurrency === 'USD') { return '$' + (val / 1500).toFixed(2); }
-        return val.toLocaleString() + (currentLang === 'ar' ? ' د.ع' : ' IQD');
-    }
-
-    function toggleRegisterMode(isReg) {
-        document.getElementById('login-form-area').style.display = isReg ? 'none' : 'block';
-        document.getElementById('register-form-area').style.display = isReg ? 'block' : 'none';
-    }
-
-    window.setPaymentMethod = function(itemId, method, btnElem) {
-        selectedPaymentMethods[itemId] = method;
-        const parent = btnElem.parentElement;
-        parent.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btnElem.classList.add('active');
-    }
-
-    function handleLoginOrRegister() {
-        const email = document.getElementById('auth-email').value.trim();
-        const pass = document.getElementById('auth-password').value.trim();
-        if(!email || !pass) return alert('الرجاء إدخال البريد الإلكتروني وكلمة السر!');
-
-        if(navigator.onLine && auth) {
-            signInWithEmailAndPassword(auth, email, pass).then((userCredential) => {
-                const user = userCredential.user;
-                currentUserUid = user.uid;
-                currentUserEmail = user.email;
-                dbRef = ref(dbCloud, 'users_data/' + currentUserUid);
-                
-                get(child(ref(dbCloud), 'users_data/' + user.uid)).then((snapshot) => {
-                    if (!snapshot.exists()) {
-                        set(dbRef, {
-                            email: email,
-                            inv: [],
-                            sales: [],
-                            p: {},
-                            debtors: [],
-                            expenses: [],
-                            createdAt: new Date().toLocaleString()
-                        });
-                    }
-                    initCloudSync();
-                });
-            }).catch((err) => {
-                alert('خطأ في تسجيل الدخول: الحساب غير موجود أو كلمة السر غير صحيحة.');
-            });
-        } else {
-            alert('يتطلب تسجيل الدخول لأول مرة وجود إنترنت للتحقق من الحساب');
-        }
-    }
-
-    function submitAccountRequest() {
-        const email = document.getElementById('reg-email').value.trim();
-        const pass = document.getElementById('reg-password').value.trim();
-        if(!email || !pass) return alert('يرجى كتابة البريد وكلمة السر بشكل كامل!');
-        
-        if(!navigator.onLine) return alert('يرجى الاتصال بالإنترنت لإرسال الطلب!');
-
-        const reqRef = push(ref(dbCloud, 'pending_requests'));
-        set(reqRef, {
-            email: email,
-            pass: pass,
-            time: new Date().toLocaleString()
-        }).then(() => {
-            alert('تم إرسال طلب إنشاء الحساب بنجاح! 🎉\n\nتستطيع الآن رؤية الإيميل وكلمة السر في قاعدة البيانات (pending_requests) لتفعيلها.');
-            toggleRegisterMode(false);
-        }).catch((err) => {
-            alert('خطأ في الإرسال: ' + err.message);
-        });
-    }
-
-    function deleteAccountSystem() {
-        if(confirm('هل أنت متأكد من رغبتك في حذف الحساب نهائياً؟')) {
-            if(dbRef && navigator.onLine) {
-                remove(dbRef).then(() => {
-                    if(auth && auth.currentUser) {
-                        deleteUser(auth.currentUser).then(() => {
-                            alert('تم حذف الحساب بنجاح.');
-                            location.reload();
-                        }).catch(err => {
-                            alert('يرجى تسجيل الدخول مرة أخرى لإتمام الحذف.');
-                        });
-                    }
-                });
-            } else {
-                alert('يتطلب اتصال بالإنترنت لحذف الحساب سحابياً.');
-            }
-        }
-    }
-
-    function logoutSystem() { 
-        localStorage.removeItem('mhmd_foon_saved_uid');
-        localStorage.removeItem('mhmd_foon_saved_email');
-        if(auth) signOut(auth).then(() => location.reload()).catch(() => location.reload());
-        else location.reload();
-    }
-
-    if(auth) {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserUid = user.uid;
-                currentUserEmail = user.email;
-                localStorage.setItem('mhmd_foon_saved_uid', user.uid);
-                localStorage.setItem('mhmd_foon_saved_email', user.email);
-                dbRef = ref(dbCloud, 'users_data/' + currentUserUid);
-                initCloudSync();
-            } else {
-                document.getElementById('auth-overlay').style.display = 'flex';
-            }
-        });
-    }
-
-    function initCloudSync() {
-        if(!dbRef) return;
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                db = data;
-                if(!db.p) db.p = {};
-                if(!db.inv) db.inv = [];
-                if(!db.sales) db.sales = [];
-                if(!db.debtors) db.debtors = [];
-                if(!db.expenses) db.expenses = [];
-            } else {
-                save();
-            }
-            localStorage.setItem('mhmd_foon_offline_db', JSON.stringify(db));
-
+    // مراقبة حالة تسجيل الدخول
+    auth.onAuthStateChanged((user) => {
+        if (user) {
             document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('userEmailDisplay').innerText = 'User: ' + currentUserEmail;
-            document.getElementById('modalEmail').innerText = currentUserEmail;
-
-            initUI();
-            render();
-            updateChart();
-        });
-    }
-
-    function save() { 
-        localStorage.setItem('mhmd_foon_offline_db', JSON.stringify(db));
-        if(dbRef && navigator.onLine) set(dbRef, db); 
-    }
-
-    function updateNetworkTag() {
-        const tag = document.getElementById('netStatusTag');
-        if(tag) {
-            if(navigator.onLine) {
-                tag.innerText = '🟢 متصل أونلاين';
-                tag.style.background = '#15803d';
-            } else {
-                tag.innerText = '🔴 يعمل أوفلاين';
-                tag.style.background = '#dc2626';
-            }
+            document.getElementById('userEmailDisplay').innerText = user.email;
+            loadCloudData();
+        } else {
+            document.getElementById('auth-overlay').style.display = 'flex';
+            document.getElementById('userEmailDisplay').innerText = '';
         }
-    }
-
-    window.addEventListener('online', updateNetworkTag);
-    window.addEventListener('offline', updateNetworkTag);
-    updateNetworkTag();
-
-    document.getElementById('btnOpenAbout').addEventListener('click', () => {
-        document.getElementById('about-modal').style.display = 'flex';
     });
-    document.getElementById('btnCloseAbout').addEventListener('click', () => {
-        document.getElementById('about-modal').style.display = 'none';
-    });
-    document.getElementById('btnDeleteAccount').addEventListener('click', deleteAccountSystem);
 
-    window.addItem = function(catKey, catName) {
-        const barcode = document.getElementById(`bc-${catKey}`).value.trim();
-        const name = document.getElementById(`n-${catKey}`).value.trim();
-        const buy = parseInt(document.getElementById(`b-${catKey}`).value) || 0;
-        const sellPrice = parseInt(document.getElementById(`s-${catKey}`).value) || 0;
-        const qty = parseInt(document.getElementById(`q-${catKey}`).value) || 0;
-        if(!name) return alert("يرجى إدخال اسم المادة / المنتج!");
+    // تسجيل الدخول
+    document.getElementById('btnLogin').onclick = () => {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value.trim();
+        if(!email || !password) return alert('يرجى إدخال البريد الإلكتروني وكلمة السر!');
+        auth.signInWithEmailAndPassword(email, password).catch(err => alert('خطأ في تسجيل الدخول: ' + err.message));
+    };
 
-        db.inv.push({ id: Date.now(), barcode, catKey, catName, name, buy, sell: sellPrice, qty });
-        document.getElementById(`bc-${catKey}`).value = '';
-        document.getElementById(`n-${catKey}`).value = '';
-        document.getElementById(`b-${catKey}`).value = '';
-        document.getElementById(`s-${catKey}`).value = '';
-        document.getElementById(`q-${catKey}`).value = '';
-        save();
-        render();
-    }
+    // إرسال طلب إنشاء الحساب إلى pending_requests
+    document.getElementById('btnRegSubmit').onclick = () => {
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        if(!email || !password) return alert('يرجى كتابة البريد وكلمة السر أولاً!');
 
-    window.sell = function(id) {
-        const idx = db.inv.findIndex(i => i.id === id);
-        if(idx === -1) return;
-        const item = db.inv[idx];
-        if(item.qty <= 0) return alert("نفدت الكمية!");
-        
-        const paymentMethod = selectedPaymentMethods[id] || 'Cash 💵';
-        const profit = item.sell - item.buy;
-        item.qty--;
-        if(!db.p[item.catKey]) db.p[item.catKey] = 0;
-        db.p[item.catKey] += profit;
+        const now = new Date();
+        const timeString = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()} ,${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
 
-        db.sales.unshift({ 
-            saleId: Date.now(), invId: item.id, name: item.name, catKey: item.catKey, catName: item.catName, 
-            sellPrice: item.sell, profit, paymentMethod, staff: currentUserEmail || 'Admin', time: new Date().toLocaleTimeString() 
-        });
-        save();
-        render();
-        updateChart();
-    }
+        dbRef.ref('pending_requests').push({
+            email: email,
+            pass: password,
+            time: timeString
+        }).then(() => {
+            alert('تم إرسال طلبك بنجاح إلى pending_requests! يرجى انتظار تفعيل الإدارة.');
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-password').value = '';
+            document.getElementById('register-form-area').style.display = 'none';
+            document.getElementById('login-form-area').style.display = 'block';
+        }).catch(err => alert('خطأ: ' + err.message));
+    };
 
-    window.returnItem = function(saleId) {
-        const sIdx = db.sales.findIndex(s => s.saleId === saleId);
-        if(sIdx === -1) return;
-        const sale = db.sales[sIdx];
-        const iIdx = db.inv.findIndex(i => i.id === sale.invId);
-        if(iIdx !== -1) db.inv[iIdx].qty++;
-        if(db.p[sale.catKey]) db.p[sale.catKey] -= sale.profit;
-        db.sales.splice(sIdx, 1);
-        save();
-        render();
-        updateChart();
-    }
+    // تسجيل الخروج
+    document.getElementById('btnLogout').onclick = () => auth.signOut();
 
-    function addDebtor() {
-        const name = document.getElementById('debtorName').value.trim();
-        const amount = parseInt(document.getElementById('debtorAmount').value) || 0;
-        if(!name || amount <= 0) return alert('يرجى إدخال اسم الزبون ومبلغ الدين!');
-        if(!db.debtors) db.debtors = [];
-        db.debtors.push({ id: Date.now(), name, amount });
-        document.getElementById('debtorName').value = '';
-        document.getElementById('debtorAmount').value = '';
-        save();
-        renderDebtors();
-    }
-
-    window.deleteDebtor = function(id) {
-        db.debtors = db.debtors.filter(d => d.id !== id);
-        save();
-        renderDebtors();
-    }
-
-    function addExpense() {
-        const reason = document.getElementById('expenseReason').value.trim();
-        const amount = parseInt(document.getElementById('expenseAmount').value) || 0;
-        if(!reason || amount <= 0) return alert('يرجى إدخال سبب المصروف وقيمته!');
-        if(!db.expenses) db.expenses = [];
-        db.expenses.push({ id: Date.now(), reason, amount });
-        document.getElementById('expenseReason').value = '';
-        document.getElementById('expenseAmount').value = '';
-        save();
-        renderExpenses();
-        render();
-    }
-
-    window.deleteExpense = function(id) {
-        db.expenses = db.expenses.filter(e => e.id !== id);
-        save();
-        renderExpenses();
-        render();
-    }
-
-    window.printInvoice = function(saleId) {
-        const sale = db.sales.find(s => s.saleId === saleId);
-        if(!sale) return;
-        const win = window.open('', '', 'width=400,height=600');
-        win.document.write(`
-            <html dir="rtl"><head><title>Invoice</title></head>
-            <body style="font-family:Tahoma; text-align:center; padding:20px;">
-                <h2>فاتورة المبيعات الرسمية 💼</h2>
-                <hr>
-                <p><b>رقم الفاتورة:</b> ${sale.saleId}</p>
-                <p><b>المادة:</b> ${sale.name}</p>
-                <p><b>القسم الفرعي:</b> ${sale.catName}</p>
-                <p><b>السعر:</b> ${formatCurrency(sale.sellPrice)}</p>
-                <p><b>طريقة الدفع:</b> ${sale.paymentMethod}</p>
-                <p><b>الموظف:</b> ${sale.staff}</p>
-                <p><b>التوقيت:</b> ${sale.time}</p>
-                <hr>
-                <p>📱 محمد فون | مكتب الكوخ</p>
-            </body></html>
-        `);
-        win.document.close();
-        win.print();
-    }
-
-    function exportBackup() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-        const dlAnchor = document.createElement('a');
-        dlAnchor.setAttribute("href", dataStr);
-        dlAnchor.setAttribute("download", "sales_app_backup_" + Date.now() + ".json");
-        document.body.appendChild(dlAnchor);
-        dlAnchor.click();
-        dlAnchor.remove();
-    }
-
-    function importBackup(event) {
-        const file = event.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                db = JSON.parse(e.target.result);
-                save();
-                render();
-                alert('تمت استعادة النسخة الاحتياطية بنجاح! 🎉');
-            } catch(err) { alert('ملف النسخة غير صالح!'); }
-        };
-        reader.readAsText(file);
-    }
-
-    function renderDebtors() {
-        const tbody = document.querySelector('#debtTable tbody');
-        if(!tbody) return;
-        tbody.innerHTML = '';
-        if(db.debtors) {
-            db.debtors.forEach(d => {
-                tbody.innerHTML += `<tr><td>${d.name}</td><td>${formatCurrency(d.amount)}</td><td><button class="btn" style="background:#dc2626; padding:2px 4px; font-size:10px;" onclick="window.deleteDebtor(${d.id})">حذف</button></td></tr>`;
-            });
-        }
-    }
-
-    function renderExpenses() {
-        const tbody = document.querySelector('#expensesTable tbody');
-        if(!tbody) return;
-        tbody.innerHTML = '';
-        let totalExp = 0;
-        if(db.expenses) {
-            db.expenses.forEach(ex => {
-                totalExp += ex.amount;
-                tbody.innerHTML += `<tr><td>${ex.reason}</td><td>${formatCurrency(ex.amount)}</td><td><button class="btn" style="background:#dc2626; padding:2px 4px; font-size:10px;" onclick="window.deleteExpense(${ex.id})">حذف</button></td></tr>`;
-            });
-        }
-        document.getElementById('totalExpensesSum').innerText = formatCurrency(totalExp);
-    }
-
-    function updateChart() {
-        const ctx = document.getElementById('profitChart');
-        if(!ctx) return;
-        const activeCats = getActiveCategories();
-        const labels = activeCats.map(c => c.name.split(' ')[1] || c.name);
-        const dataVals = activeCats.map(c => db.p[c.id] || 0);
-
-        if(profitChartInstance) profitChartInstance.destroy();
-        profitChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Profit', data: dataVals, backgroundColor: '#38bdf8', borderWidth: 1 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff', font: { size: 9 } } } }
-            }
-        });
-    }
-
+    // بناء الواجهة ديناميكياً بناءً على النشاط المختار
     function initUI() {
         const grid = document.getElementById('mainGrid');
-        if(!grid) return;
         grid.innerHTML = '';
-        const activeCats = getActiveCategories();
-
-        activeCats.forEach(c => {
+        activeCategories.forEach(c => {
+            if(!systemData.p[c.id]) systemData.p[c.id] = 0;
             grid.innerHTML += `
-                <div class="section-card">
-                    <div class="section-title">${c.name}</div>
-                    <div class="profit-box">صافي أرباح القسم: <span id="p-${c.id}">0</span></div>
-                    <div class="form-row">
-                        <input type="text" id="bc-${c.id}" placeholder="الباركود">
-                        <input type="text" id="n-${c.id}" placeholder="اسم المادة / المنتج">
+                <div class="section-card" style="border-top-color: ${c.color}">
+                    <h3 style="font-size:16px; margin-bottom:10px;">${c.name}</h3>
+                    <div class="profit-badge"><span>الربح: <span id="p-${c.id}">${systemData.p[c.id]}</span></span></div>
+                    <input type="text" id="bc-${c.id}" placeholder="باركود القطعة" style="margin-bottom:5px;">
+                    <input type="text" id="n-${c.id}" placeholder="اسم المادة" style="margin-bottom:5px;">
+                    <div class="input-group">
+                        <input type="number" id="b-${c.id}" placeholder="شراء">
+                        <input type="number" id="s-${c.id}" placeholder="بيع">
+                        <input type="number" id="q-${c.id}" placeholder="عدد">
                     </div>
-                    <div class="form-row">
-                        <input type="number" id="b-${c.id}" placeholder="سعر الشراء">
-                        <input type="number" id="s-${c.id}" placeholder="سعر البيع">
-                    </div>
-                    <div class="form-row">
-                        <input type="number" id="q-${c.id}" placeholder="الكمية المتاحة" style="grid-column: span 2;">
-                    </div>
-                    <button class="btn btn-add" onclick="window.addItem('${c.id}', '${c.name}')">➕ إضافة للمخزن</button>
-                    <div class="table-wrap">
-                        <table id="t-${c.id}">
-                            <thead><tr><th>المادة</th><th>العدد</th><th>البيع والربح</th><th>إجراء</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+                    <button class="btn btn-add" onclick="addItem('${c.id}', '${c.name}')">إضافة للمخزن ➕</button>
+                    <div class="table-wrap"><table id="t-${c.id}"><thead><tr><th>المادة</th><th>عدد</th><th>إجراء</th></tr></thead><tbody></tbody></table></div>
                 </div>`;
         });
+        render();
     }
 
-    document.getElementById('storeTypeSelect').addEventListener('change', (e) => {
-        currentStoreType = e.target.value;
-        initUI();
-        render();
-        updateChart();
-    });
-
-    document.getElementById('globalSearch').addEventListener('input', (e) => {
-        searchQuery = e.target.value.toLowerCase().trim();
-        render();
-    });
-
-    document.getElementById('langSelect').addEventListener('change', (e) => { currentLang = e.target.value; });
-    document.getElementById('currencySelect').addEventListener('change', (e) => { currentCurrency = e.target.value; render(); });
-    document.getElementById('btnLogin').addEventListener('click', handleLoginOrRegister);
-    document.getElementById('btnRegToggle').addEventListener('click', () => toggleRegisterMode(true));
-    document.getElementById('btnRegSubmit').addEventListener('click', submitAccountRequest);
-    document.getElementById('btnRegBack').addEventListener('click', () => toggleRegisterMode(false));
-    document.getElementById('btnLogout').addEventListener('click', logoutSystem);
-    document.getElementById('btnSaveDebt').addEventListener('click', addDebtor);
-    document.getElementById('btnSaveExpense').addEventListener('click', addExpense);
-    document.getElementById('btnExport').addEventListener('click', exportBackup);
-    document.getElementById('btnImport').addEventListener('click', () => document.getElementById('importFile').click());
-    document.getElementById('importFile').addEventListener('change', importBackup);
-
-    initUI();
-    render();
-
-    function render() {
-        let totalItems = 0, totalBuy = 0, totalProfitAll = 0, totalExpenses = 0;
-        
-        if(db.expenses) {
-            db.expenses.forEach(ex => totalExpenses += ex.amount);
-        }
-
-        const activeCats = getActiveCategories();
-
-        activeCats.forEach(c => {
-            const profitElem = document.getElementById(`p-${c.id}`);
-            if(profitElem) {
-                const secProfit = db.p[c.id] || 0;
-                profitElem.innerText = formatCurrency(secProfit);
-                totalProfitAll += secProfit;
-            }
-            const tbody = document.querySelector(`#t-${c.id} tbody`);
-            if(tbody) {
-                tbody.innerHTML = '';
-                
-                let itemsList = db.inv.filter(i => i.catKey === c.id);
-                if(searchQuery) {
-                    itemsList = itemsList.filter(i => i.name.toLowerCase().includes(searchQuery) || (i.barcode && i.barcode.includes(searchQuery)));
-                }
-
-                itemsList.forEach(i => {
-                    totalItems += i.qty;
-                    totalBuy += (i.buy * i.qty);
-                    const rowClass = i.qty <= 2 ? 'low-stock' : '';
-                    const currentMethod = selectedPaymentMethods[i.id] || 'Cash 💵';
-                    const profitMargin = i.buy > 0 ? (((i.sell - i.buy) / i.buy) * 100).toFixed(0) : 0;
-
-                    tbody.innerHTML += `<tr class="${rowClass}">
-                        <td>${i.name} ${i.qty <= 2 ? '⚠️ قرب النفاذ' : ''}</td>
-                        <td><b>${i.qty}</b></td>
-                        <td>
-                            ${formatCurrency(i.sell)}<br>
-                            <span style="font-size:10px; color:var(--success);">ربح: +${profitMargin}%</span>
-                        </td>
-                        <td>
-                            <div class="payment-toggle">
-                                <button class="btn ${currentMethod.includes('Cash')?'active':''}" onclick="window.setPaymentMethod(${i.id}, 'Cash 💵', this)">نقداً 💵</button>
-                                <button class="btn ${currentMethod.includes('Master')?'active':''}" onclick="window.setPaymentMethod(${i.id}, 'Mastercard 💳', this)">ماستر 💳</button>
-                            </div>
-                            <button class="btn btn-sell" style="margin-top:4px;" onclick="window.sell(${i.id})">بيع</button>
-                        </td>
-                    </tr>`;
-                });
-            }
-        });
-
-        document.getElementById('totalItemsCount').innerText = totalItems;
-        document.getElementById('totalBuyMoney').innerText = formatCurrency(totalBuy);
-        document.getElementById('totalSalesCount').innerText = db.sales.length;
-        document.getElementById('totalExpensesSum').innerText = formatCurrency(totalExpenses);
-        
-        const finalNet = totalProfitAll - totalExpenses;
-        const netProfitEl = document.getElementById('totalNetProfit');
-        netProfitEl.innerText = formatCurrency(finalNet);
-        netProfitEl.style.color = finalNet >= 0 ? 'var(--success)' : 'var(--danger)';
-
-        renderDebtors();
-        renderExpenses();
-
-        const logBody = document.querySelector("#salesLogTable tbody");
-        if(logBody) {
-            logBody.innerHTML = '';
-            db.sales.slice(0, 15).forEach(s => {
-                logBody.innerHTML += `<tr>
-                    <td>${s.saleId.toString().slice(-6)}</td>
-                    <td>${s.name}</td>
-                    <td>${s.catName}</td>
-                    <td>${formatCurrency(s.sellPrice || 0)}</td>
-                    <td style="color:var(--success); font-weight:bold;">+${formatCurrency(s.profit)}</td>
-                    <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px;">${s.paymentMethod || 'Cash'}</span></td>
-                    <td style="font-size:11px; color:#475569;">${s.staff}</td>
-                    <td>${s.time}</td>
-                    <td>
-                        <button class="btn" style="background:#2563eb; padding:2px 5px; font-size:10px; margin-bottom:2px;" onclick="window.printInvoice(${s.saleId})">🖨️</button>
-                        <button class="btn" style="background:#dc2626; padding:2px 5px; font-size:10px;" onclick="window.returnItem(${s.saleId})">X</button>
-                    </td>
-                </tr>`;
-            });
-        }
-    }
-</script>
-</body>
-</html>
+    // إضافة مادة جديدة للمخزن سحابياً
+    function addItem(catKey, catName) {
+        const barcode = document.ge
